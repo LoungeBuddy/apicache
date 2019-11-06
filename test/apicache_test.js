@@ -12,10 +12,6 @@ var movies = require('./api/lib/data.json')
 var apis = [
   { name: 'express', server: require('./api/express') },
   { name: 'express+gzip', server: require('./api/express-gzip') },
-
-  // THESE TESTS ARE REMOVED AS RESTIFY 4 and 5 ARE CURRENTLY BREAKING IN THE ENVIRONMENT
-  { name: 'restify', server: require('./api/restify') },
-  { name: 'restify+gzip', server: require('./api/restify-gzip') },
 ]
 
 function assertNumRequestsProcessed(app, n) {
