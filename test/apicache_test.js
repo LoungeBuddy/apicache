@@ -243,6 +243,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         headerBlacklist: [],
         statusCodes: { include: [], exclude: [] },
         events: { expire: undefined },
+        hardExpiryMultiplier: 10,
         headers: {},
         trackPerformance: false,
       })
@@ -256,6 +257,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         headerBlacklist: [],
         statusCodes: { include: [], exclude: [] },
         events: { expire: undefined },
+        hardExpiryMultiplier: 10,
         headers: {},
         trackPerformance: false,
       })
@@ -271,6 +273,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['bar'],
         statusCodes: { include: [], exclude: ['400'] },
         events: { expire: undefined },
+        hardExpiryMultiplier: 15,
         headers: {
           'cache-control': 'no-cache',
         },
@@ -292,6 +295,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         headerBlacklist: [],
         statusCodes: { include: [], exclude: ['400'] },
         events: { expire: undefined },
+        hardExpiryMultiplier: 15,
         headers: {
           'cache-control': 'no-cache',
         },
@@ -304,6 +308,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['foo'],
         jsonp: false,
         redisClient: false,
+        hardExpiryMultiplier: 10,
         headerBlacklist: [],
         statusCodes: { include: [], exclude: ['200'] },
         events: { expire: undefined },
@@ -320,6 +325,7 @@ describe('.middleware {MIDDLEWARE}', function() {
       var middleware1 = apicache.middleware('10 seconds', null, {
         defaultDuration: 7200000,
         statusCodes: { include: [], exclude: ['400'] },
+        hardExpiryMultiplier: 120,
       })
       var middleware2 = apicache.middleware('20 seconds', null, {
         defaultDuration: 1800000,
@@ -339,6 +345,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         headerBlacklist: [],
         statusCodes: { include: [], exclude: ['400'] },
         events: { expire: undefined },
+        hardExpiryMultiplier: 120,
         headers: {},
         trackPerformance: false,
       })
@@ -349,6 +356,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['foo'],
         jsonp: false,
         redisClient: false,
+        hardExpiryMultiplier: 10,
         headerBlacklist: [],
         statusCodes: { include: [], exclude: ['200'] },
         events: { expire: undefined },
@@ -364,6 +372,7 @@ describe('.middleware {MIDDLEWARE}', function() {
       })
       var middleware1 = apicache.middleware('10 seconds', null, {
         defaultDuration: 7200000,
+        hardExpiryMultiplier: 5,
         statusCodes: { include: [], exclude: ['400'] },
       })
       var middleware2 = apicache.middleware('20 seconds', null, {
@@ -374,6 +383,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         debug: false,
         defaultDuration: 1800000,
         appendKey: ['foo'],
+        hardExpiryMultiplier: 25,
         headers: {
           'cache-control': 'no-cache',
         },
@@ -392,6 +402,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         redisClient: false,
         headerBlacklist: [],
         statusCodes: { include: [], exclude: [] },
+        hardExpiryMultiplier: 25,
         events: { expire: undefined },
         headers: {
           'cache-control': 'no-cache',
@@ -405,6 +416,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['foo'],
         jsonp: false,
         redisClient: false,
+        hardExpiryMultiplier: 10,
         headerBlacklist: [],
         statusCodes: { include: [], exclude: [] },
         events: { expire: undefined },

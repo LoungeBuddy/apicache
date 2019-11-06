@@ -45,6 +45,7 @@ function ApiCache() {
     appendKey: [],
     jsonp: false,
     redisClient: false,
+    hardExpiryMultiplier: 10,
     headerBlacklist: [],
     statusCodes: {
       include: [],
