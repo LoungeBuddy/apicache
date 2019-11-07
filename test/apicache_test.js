@@ -827,7 +827,7 @@ describe('.middleware {MIDDLEWARE}', function() {
           })
       })
 
-      it('removes a cache key after expiration', function(done) {
+      it('removes a cache key after hard expiration', function(done) {
         var app = mockAPI.create(10)
 
         request(app)
@@ -840,7 +840,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         setTimeout(function() {
           expect(app.apicache.getIndex().all).to.have.length(0)
           done()
-        }, 25)
+        }, 250)
       })
 
       it('executes expiration callback from globalOptions.events.expire upon entry expiration', function(done) {
@@ -861,7 +861,7 @@ describe('.middleware {MIDDLEWARE}', function() {
           expect(app.apicache.getIndex().all).to.have.length(0)
           expect(callbackResponse).to.equal('/api/movies')
           done()
-        }, 25)
+        }, 250)
       })
 
       it('clearing cache cancels expiration callback', function(done) {
@@ -908,7 +908,7 @@ describe('.middleware {MIDDLEWARE}', function() {
           expect(app.apicache.getIndex().all).to.have.length(0)
           expect(callbackResponse).to.equal('/api/movies')
           done()
-        }, 25)
+        }, 250)
       })
     })
   })

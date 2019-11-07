@@ -131,24 +131,26 @@ function ApiCache() {
 
   function cacheResponse(key, value, duration) {
     var redis = globalOptions.redisClient
+    var hardExpiryDuration = duration * globalOptions.hardExpiryMultiplier
+    var softExpiryDate = Date.now() + duration
     var expireCallback = globalOptions.events.expire
 
     if (redis) {
       try {
         redis.hset(key, 'response', JSON.stringify(value))
-        redis.hset(key, 'duration', duration)
-        redis.expire(key, duration / 1000, expireCallback || function() {})
+        redis.hset(key, 'softExpiry', softExpiryDate)
+        redis.expire(key, hardExpiryDuration / 1000, expireCallback || function() {})
       } catch (err) {
         debug('[apicache] error in redis.hset()')
       }
     } else {
-      memCache.add(key, value, duration, expireCallback)
+      memCache.add(key, {value: value, softExpiry: softExpiryDate}, hardExpiryDuration, expireCallback)
     }
 
     // add automatic cache clearing from duration, includes max limit on setTimeout
     timers[key] = setTimeout(function() {
       instance.clear(key, true)
-    }, Math.min(duration, 2147483647))
+    }, Math.min(hardExpiryDuration, 2147483647))
   }
 
   function accumulateContent(res, content) {
@@ -634,14 +636,20 @@ function ApiCache() {
       // attempt cache hit
       var redis = opt.redisClient
       var cached = !redis ? memCache.getValue(key) : null
-
-      // send if cache hit from memory-cache
+      
+      // send if cache hit from memory-cache and not soft expired
       if (cached) {
+        var isSoftExpired = (new Date() - cached.softExpiryDate) > 0
+        if (isSoftExpired) {
+            perf.miss(key)
+            return makeResponseCacheable(req, res, next, key, duration, strDuration, middlewareToggle)
+        }
+
         var elapsed = new Date() - req.apicacheTimer
         debug('sending cached (memory-cache) version of', key, logDuration(elapsed))
 
         perf.hit(key)
-        return sendCachedResponse(req, res, cached, middlewareToggle, next, duration)
+        return sendCachedResponse(req, res, cached.value, middlewareToggle, next, duration)
       }
 
       // send if cache hit from redis
@@ -651,6 +659,12 @@ function ApiCache() {
             if (!err && obj && obj.response) {
               var elapsed = new Date() - req.apicacheTimer
               debug('sending cached (redis) version of', key, logDuration(elapsed))
+
+              var isSoftExpired = (new Date() - obj.softExpiryDate) > 0
+              if (isSoftExpired) {
+                perf.miss(key)
+                return makeResponseCacheable(req, res, next, key, duration, strDuration, middlewareToggle)
+              }
 
               perf.hit(key)
               return sendCachedResponse(
