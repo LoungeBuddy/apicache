@@ -234,6 +234,7 @@ describe('.middleware {MIDDLEWARE}', function() {
       var middleware1 = apicache.middleware('10 seconds')
       var middleware2 = apicache.middleware('20 seconds')
       expect(middleware1.options()).to.eql({
+        allowExpired: false,
         debug: false,
         defaultDuration: 3600000,
         enabled: true,
@@ -248,6 +249,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         trackPerformance: false,
       })
       expect(middleware2.options()).to.eql({
+        allowExpired: false,
         debug: false,
         defaultDuration: 3600000,
         enabled: true,
@@ -268,6 +270,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['test'],
       })
       var middleware1 = apicache.middleware('10 seconds', null, {
+        allowExpired: true,
         debug: true,
         defaultDuration: 7200000,
         appendKey: ['bar'],
@@ -286,6 +289,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         events: { expire: undefined },
       })
       expect(middleware1.options()).to.eql({
+        allowExpired: true,
         debug: true,
         defaultDuration: 7200000,
         enabled: true,
@@ -302,6 +306,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         trackPerformance: false,
       })
       expect(middleware2.options()).to.eql({
+        allowExpired: false,
         debug: false,
         defaultDuration: 1800000,
         enabled: true,
@@ -324,11 +329,13 @@ describe('.middleware {MIDDLEWARE}', function() {
       })
       var middleware1 = apicache.middleware('10 seconds', null, {
         defaultDuration: 7200000,
+        allowExpired: false,
         statusCodes: { include: [], exclude: ['400'] },
         hardExpiryMultiplier: 120,
       })
       var middleware2 = apicache.middleware('20 seconds', null, {
         defaultDuration: 1800000,
+        allowExpired: true,
         statusCodes: { include: [], exclude: ['200'] },
       })
       apicache.options({
@@ -336,6 +343,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         appendKey: ['foo'],
       })
       expect(middleware1.options()).to.eql({
+        allowExpired: false,
         debug: false,
         defaultDuration: 7200000,
         enabled: true,
@@ -350,6 +358,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         trackPerformance: false,
       })
       expect(middleware2.options()).to.eql({
+        allowExpired: true,
         debug: false,
         defaultDuration: 1800000,
         enabled: true,
@@ -369,10 +378,12 @@ describe('.middleware {MIDDLEWARE}', function() {
       apicache.options({
         debug: true,
         appendKey: ['test'],
+        allowExpired: false,
       })
       var middleware1 = apicache.middleware('10 seconds', null, {
         defaultDuration: 7200000,
         hardExpiryMultiplier: 5,
+        allowExpired: true,
         statusCodes: { include: [], exclude: ['400'] },
       })
       var middleware2 = apicache.middleware('20 seconds', null, {
@@ -391,9 +402,11 @@ describe('.middleware {MIDDLEWARE}', function() {
       middleware2.options({
         defaultDuration: 450000,
         enabled: false,
+        allowExpired: true,
         appendKey: ['foo'],
       })
       expect(middleware1.options()).to.eql({
+        allowExpired: false,
         debug: false,
         defaultDuration: 1800000,
         enabled: true,
@@ -410,6 +423,7 @@ describe('.middleware {MIDDLEWARE}', function() {
         trackPerformance: false,
       })
       expect(middleware2.options()).to.eql({
+        allowExpired: true,
         debug: true,
         defaultDuration: 450000,
         enabled: false,

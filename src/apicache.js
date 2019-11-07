@@ -39,6 +39,7 @@ function ApiCache() {
   var memCache = new MemoryCache()
 
   var globalOptions = {
+    allowExpired: false,
     debug: false,
     defaultDuration: 3600000,
     enabled: true,
