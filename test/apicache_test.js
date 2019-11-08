@@ -575,6 +575,29 @@ describe('.middleware {MIDDLEWARE}', function() {
           })
       })
 
+      it('properly returns expired data if requested', function() {
+        var app = mockAPI.create('1 second')
+
+        return request(app)
+          .get('/api/movies')
+          .expect(200, movies)
+          .then(assertNumRequestsProcessed(app, 1))
+          .then(function() {
+            setTimeout(function() {
+                app.apicache.options({
+                    allowExpired: true,
+                })
+                return request(app)
+                    .get('/api/movies')
+                    .set('Accept', 'application/json')
+                    .expect('Content-Type', /json/)
+                    .expect('serving-stale', 'true')
+                    .expect(200, movies)
+                    .then(assertNumRequestsProcessed(app, 1))
+                }, 1500)
+          })
+      })
+
       it('properly uses appendKey params', function() {
         var app = mockAPI.create('10 seconds', { appendKey: ['method'] })
 
@@ -964,11 +987,43 @@ describe('Redis support', function() {
               .get('/api/movies')
               .expect(200, movies)
               .expect('apicache-store', 'redis')
+              .expect('serving-stale', 'false')
               .expect('apicache-version', pkg.version)
               .then(assertNumRequestsProcessed(app, 1))
               .then(function() {
                 db.flushdb()
               })
+          })
+      })
+
+      it('properly returns expired data from Redis if requested', function() {
+        var db = redis.createClient()
+        var app = mockAPI.create('1 second', { redisClient: db })
+
+        return request(app)
+          .get('/api/movies')
+          .expect(200, movies)
+          .then(function(res) {
+            expect(res.headers['apicache-store']).to.be.undefined
+            expect(res.headers['apicache-version']).to.be.undefined
+            expect(app.requestsProcessed).to.equal(1)
+          })
+          .then(function() {
+            setTimeout(function() {
+                app.apicache.options({
+                    redisClient: db, allowExpired: true,
+                })
+                return request(app)
+                    .get('/api/movies')
+                    .expect(200, movies)
+                    .expect('apicache-store', 'redis')
+                    .expect('serving-stale', 'true')
+                    .expect('apicache-version', pkg.version)
+                    .then(assertNumRequestsProcessed(app, 1))
+                    .then(function() {
+                        db.flushdb()
+                    })
+            }, 1500) 
           })
       })
 
@@ -1026,6 +1081,7 @@ describe('Redis support', function() {
           .get('/api/movies')
           .expect(200, movies)
       })
+
     })
   })
 })

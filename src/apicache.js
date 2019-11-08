@@ -245,7 +245,7 @@ function ApiCache() {
     next()
   }
 
-  function sendCachedResponse(request, response, cacheObject, toggle, next, duration) {
+  function sendCachedResponse(request, response, cacheObject, toggle, next, duration, isSoftExpired) {
     if (toggle && !toggle(request, response)) {
       return next()
     }
@@ -266,6 +266,7 @@ function ApiCache() {
     if (process.env.NODE_ENV !== 'production') {
       Object.assign(headers, {
         'apicache-store': globalOptions.redisClient ? 'redis' : 'memory',
+        'serving-stale': isSoftExpired,
         'apicache-version': pkg.version,
       })
     }
@@ -640,8 +641,8 @@ function ApiCache() {
       
       // send if cache hit from memory-cache and not soft expired
       if (cached) {
-        var isSoftExpired = (new Date() - cached.softExpiryDate) > 0
-        if (isSoftExpired) {
+        var isSoftExpired = (new Date() - cached.softExpiry) > 0
+        if (isSoftExpired && !opt.allowExpired) {
             perf.miss(key)
             return makeResponseCacheable(req, res, next, key, duration, strDuration, middlewareToggle)
         }
@@ -650,7 +651,7 @@ function ApiCache() {
         debug('sending cached (memory-cache) version of', key, logDuration(elapsed))
 
         perf.hit(key)
-        return sendCachedResponse(req, res, cached.value, middlewareToggle, next, duration)
+        return sendCachedResponse(req, res, cached.value, middlewareToggle, next, duration, isSoftExpired)
       }
 
       // send if cache hit from redis
@@ -661,8 +662,8 @@ function ApiCache() {
               var elapsed = new Date() - req.apicacheTimer
               debug('sending cached (redis) version of', key, logDuration(elapsed))
 
-              var isSoftExpired = (new Date() - obj.softExpiryDate) > 0
-              if (isSoftExpired) {
+              var isSoftExpired = (new Date() - obj.softExpiry) > 0
+              if (isSoftExpired && !opt.allowExpired) {
                 perf.miss(key)
                 return makeResponseCacheable(req, res, next, key, duration, strDuration, middlewareToggle)
               }
@@ -674,7 +675,8 @@ function ApiCache() {
                 JSON.parse(obj.response),
                 middlewareToggle,
                 next,
-                duration
+                duration,
+                isSoftExpired
               )
             } else {
               perf.miss(key)
