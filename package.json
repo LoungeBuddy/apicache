@@ -15,6 +15,7 @@
   },
   "description": "An ultra-simplified API response caching middleware for Express/Node using plain-english durations.",
   "main": "./src/apicache.js",
+  "types": "./index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/kwhitley/apicache.git"
@@ -51,5 +52,8 @@
     "restify": "^7.7.0",
     "restify-etag-cache": "^1.0.12",
     "supertest": "^3.4.2"
+  },
+  "dependencies": {
+    "@types/redis": "^2.8.14"
   }
 }
