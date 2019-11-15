@@ -17,6 +17,9 @@ Because of the extra memory pressure from keeping expired data around it's advis
 
 From the perspective of the api client nothing is different from the original apicache lib until you use the `allowExpired` option.
 
+when `allowExpired: true` is passed an additional header is set on the response so downstream can act accordingly. This header is `serving-stale: true`.
+
+
 #### Supports Redis or built-in memory engine with auto-clearing.
 
 [![npm version](https://badge.fury.io/js/apicache.svg)](https://www.npmjs.com/package/apicache)
