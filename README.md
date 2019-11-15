@@ -1,5 +1,22 @@
 # A simple API response caching middleware for Express/Node using plain-english durations.
 
+
+### The LB Fork
+
+This fork adds extra functionality to work closely with the circuit-breaker pattern. 
+
+The code has been modified so that the requested cache duration by the client is actually multiplied internally. However, the cache works identically from the perspective of the api client. It still only returns the value to the api client if the value is not older than the requested cache duration.
+
+This multiplier is available as `hardExpiryMultiplier` in the options.
+
+So why keep around old cache values that we're not going to return to the api client?
+
+Keeping older 'expired' values around allows us to fall back to stale data in the event that our upstream services are unhealthy. The api client can pass `allowExpired: true` to the options to allow this apicache fork to return any data we have no matter how stale it may be. You can control this behaviour per-route and per-request. 
+
+Because of the extra memory pressure from keeping expired data around it's advised to used a redis backing store for apicache with a maxmemory policy like `volatile-lru` or similar.
+
+From the perspective of the api client nothing is different from the original apicache lib until you use the `allowExpired` option.
+
 #### Supports Redis or built-in memory engine with auto-clearing.
 
 [![npm version](https://badge.fury.io/js/apicache.svg)](https://www.npmjs.com/package/apicache)
@@ -142,22 +159,38 @@ let cache5min = cache('5 min') // continue to use normally
 
 #### Available Options (first value is default)
 
-```js
-{
-  debug:            false|true,     // if true, enables console output
-  defaultDuration:  '1 hour',       // should be either a number (in ms) or a string, defaults to 1 hour
-  enabled:          true|false,     // if false, turns off caching globally (useful on dev)
-  redisClient:      client,         // if provided, uses the [node-redis](https://github.com/NodeRedis/node_redis) client instead of [memory-cache](https://github.com/ptarjan/node-cache)
-  appendKey:        fn(req, res),   // appendKey takes the req/res objects and returns a custom value to extend the cache key
-  headerBlacklist:  [],             // list of headers that should never be cached
-  statusCodes: {
-    exclude:        [],             // list status codes to specifically exclude (e.g. [404, 403] cache all responses unless they had a 404 or 403 status)
-    include:        [],             // list status codes to require (e.g. [200] caches ONLY responses with a success/200 code)
-  },
-  trackPerformance: false,          // enable/disable performance tracking... WARNING: super cool feature, but may cause memory overhead issues
-  headers: {
-    // 'cache-control':  'no-cache' // example of header overwrite
-  }
+```ts
+export interface Options {
+  /** allow apicache to return stale data past intended ttl (in case of upstream failure) defaults to false */
+  allowExpired?: boolean,
+  /** if true, enables console output */
+  debug?: boolean;
+  /** should be either a number (in ms) or a string, defaults to 1 hour */
+  defaultDuration?: string;
+  /** if false, turns off caching globally (useful on dev) */
+  enabled?: boolean;
+  /**
+   * if provided, uses the [node-redis](https://github.com/NodeRedis/node_redis) client instead of [memory-cache](https://github.com/ptarjan/node-cache)
+   */
+  redisClient?: RedisClient;
+  /** appendKey takes the req/res objects and returns a custom value to extend the cache key */
+  appendKey?: any;
+  /** number to multiply against the requested TTL (soft expiry) to calculate the hard expiry where the item is actually removed from the cache. defaults to 10  */ 
+  hardExpiryMultiplier?: number,
+  /** list of headers that should never be cached  */
+  headerBlacklist?: string[];
+  statusCodes?: {
+    /** list status codes to specifically exclude (e.g. [404, 403] cache all responses unless they had a 404 or 403 status) */
+    exclude?: number[];
+    /** list status codes to require (e.g. [200] caches ONLY responses with a success/200 code) */
+    include?: number[];
+  };
+  /**
+   * 'cache-control':  'no-cache' // example of header overwrite
+   */
+  headers?: {
+    [key: string]: string;
+  };
 }
 ```
 
