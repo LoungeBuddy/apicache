@@ -10,7 +10,7 @@
     "prepublish": "npm run test"
   },
   "engines": {
-    "node": "~12.9.0",
+    "node": ">=6.2.0 <13",
     "yarn": "^1.17.3"
   },
   "description": "An ultra-simplified API response caching middleware for Express/Node using plain-english durations.",
